@@ -3,48 +3,84 @@
         <active>true</active>
         <description/>
         <global>false</global>
-        <name>x_283014_analytics.plusAnalyticsService</name>
+        <name>x_283014_analytics.plus_analytics</name>
         <script><![CDATA[angular.module('sn.$sp')
-    .factory('plusAnalyticsService', function($log, $window, $rootScope) {
+    .factory('plusAnalyticsService', function($rootScope, $log, $injector, $window, $http) {
+		var analyticsProvider;	
+		var config = {};
+        var isInitialized = false;
+	
+	
         return {
-            startTrackPage: startTrackPage,
+            setProvider: setProvider,
+			init: init,
+			
+			//interface for implementing analytics services
+			startTrackPage: startTrackPage,
             stopTrackPage: stopTrackPage,
             trackEvent: trackEvent,
             trackSearch: trackSearch
         };
-
+		function init(){
+			if (isInitialized) {
+                return;
+            }
+			getConfig().then(function(conf){
+				config = conf;
+				config.userId=window.NOW.user_id_hashed || window.NOW.user_id;
+				setProvider(config.provider);
+				analyticsProvider.init(config);
+				registerHandlers();
+				isInitialized=true;
+			});
+		}
+		function getConfig() {
+			return $http.get('/api/x_283014_analytics/analytics/config').then(function(response) {
+                return response.data.result;
+            });
+        }
+		function registerHandlers() {
+            $rootScope.$on('$locationChangeSuccess', function(event, newUrl, oldUrl) {
+                startTrackPage(oldUrl, newUrl);
+            });
+            $rootScope.$on('sp.page.loaded', function(event, newUrl, oldUrl, newState, oldState) {
+                var page = event.targetScope.page;
+                stopTrackPage(page.title);
+            });
+            $rootScope.$on('$sp.sc_cat_item.submitted', function(event, data) {
+                var item = event.targetScope.data.sc_cat_item;
+                trackEvent('Form', 'Submit Catalog Item', item.name);
+            });
+            $rootScope.$on('$sp.sc_order_guide.submitted', function(event, data) {
+                var count = event.targetScope.includedItemsCounter;
+				var item = event.targetScope.data.sc_cat_item;
+                trackEvent('Form', 'Submit Order Guide', item.name, count);
+            });
+            
+        }
+		function setProvider(name){
+			analyticsProvider=$injector.get('plus_analytics.'+name);
+		}
         function trackSearch(term, resultCount, searchType) {
-            $window._paq.push(['trackSiteSearch', term, searchType, resultCount]);
+            analyticsProvider.trackSearch(term, resultCount, searchType);
         }
 
         function trackEvent(category, action, name, value) {
-			
             name = name ? name : '';
             value = value ? value : '';
-            $window._paq.push(['trackEvent', category, action, name, value]);
+			analyticsProvider.trackEvent(category, action, name, value);
         }
 
         function startTrackPage(referrer, newUrl) {
-			$log.log('startTrackPage');
-            $window._paq.push(['setReferrerUrl', referrer]);
-            $window._paq.push(['setCustomUrl', newUrl]);
+			analyticsProvider.startTrackPage(referrer, newUrl);
         }
 
         function stopTrackPage(title) {
-			$log.log('stopTrackPage');
-            $window._paq.push(['setDocumentTitle', title]);
-
-            // remove all previously assigned custom variables, requires Matomo (formerly Piwik) 3.0.2
-            $window._paq.push(['deleteCustomVariables', 'page']);
-            $window._paq.push(['trackPageView']);
-
-            $window._paq.push(['trackAllContentImpressions']);
-            $window._paq.push(['enableLinkTracking']);
-
+			analyticsProvider.stopTrackPage(title);
         }
 
     })
-    .service('tracker', function($rootScope, $http, $window, $log, plusAnalyticsService) {
+    /*.service('tracker', function($rootScope, $http, $window, $log, plusAnalyticsService) {
         this.config = {};
         this.isInitialized = false;
 
@@ -57,6 +93,8 @@
             getConfig()
                 .then(function(config) {
                     this.config = config;
+					plusAnalyticsService.setStrategy(config.provider);
+					plusAnalyticsService.init();
                     _paq.push(['setTrackerUrl', this.config.trackerUrl + '/matomo.php']);
                     _paq.push(['setSiteId', this.config.siteId + '']);
 					_paq.push(['enableHeartBeatTimer']);
@@ -96,7 +134,7 @@
             });
             
         };
-    })
+    })*/
     .directive('plusAnalyticsOn', function($rootScope, plusAnalyticsService) {
 
         function link($scope, element, attrs) {
@@ -142,28 +180,28 @@
             link: link
         };
     })
-    .run(function($log, tracker) {
+    .run(function($log, plusAnalyticsService) {
         try {
-            tracker.init();
-            tracker.registerHandlers();
+            plusAnalyticsService.init();
+            //tracker.registerHandlers();
         } catch (ex) {
-            $log.log('ERROR setting up matomo: ' + ex);
+            $log.log('ERROR setting up analytics+: ' + ex);
         }
 
     });]]></script>
-        <script_name>plusAnalyticsService</script_name>
+        <script_name>plus_analytics</script_name>
         <sys_class_name>sys_ui_script</sys_class_name>
         <sys_created_by>admin</sys_created_by>
         <sys_created_on>2021-09-01 05:59:19</sys_created_on>
         <sys_id>87dff04edb123010e5f77a6139961978</sys_id>
-        <sys_mod_count>0</sys_mod_count>
-        <sys_name>x_283014_analytics.plusAnalyticsService</sys_name>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_name>x_283014_analytics.plus_analytics</sys_name>
         <sys_package display_value="Analytics+" source="x_283014_analytics">b341a7312f1130100eef97eef699b612</sys_package>
         <sys_policy/>
         <sys_scope display_value="Analytics+">b341a7312f1130100eef97eef699b612</sys_scope>
         <sys_update_name>sys_ui_script_87dff04edb123010e5f77a6139961978</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2021-09-01 05:59:19</sys_updated_on>
+        <sys_updated_on>2021-09-02 08:31:46</sys_updated_on>
         <ui_type>1</ui_type>
         <use_scoped_format>false</use_scoped_format>
     </sys_ui_script>

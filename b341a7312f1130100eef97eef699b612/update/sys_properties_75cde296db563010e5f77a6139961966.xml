@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>The Id for the tracker. For GA it is the tracker id, for Matomo it is the site id.</description>
+        <ignore_cache>true</ignore_cache>
+        <is_private>false</is_private>
+        <name>x_283014_analytics.tracker_id</name>
+        <read_roles/>
+        <suffix>tracker_id</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2021-09-02 08:24:45</sys_created_on>
+        <sys_id>75cde296db563010e5f77a6139961966</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>x_283014_analytics.tracker_id</sys_name>
+        <sys_package display_value="Analytics+" source="x_283014_analytics">b341a7312f1130100eef97eef699b612</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Analytics+">b341a7312f1130100eef97eef699b612</sys_scope>
+        <sys_update_name>sys_properties_75cde296db563010e5f77a6139961966</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2021-10-05 19:33:17</sys_updated_on>
+        <type>string</type>
+        <value>G-KREM6V1LFN</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=75cde296db563010e5f77a6139961966"/>
+</record_update>
